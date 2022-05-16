@@ -1,7 +1,6 @@
 ###
 ## import libraries
 ###
-from numpy.lib.utils import source
 import streamlit as st
 import seaborn as sb
 import matplotlib.pyplot as plt
@@ -21,6 +20,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, precision_score
 from sklearn.tree import DecisionTreeClassifier
 
+from del_duplicated import del_duplicated
 from digitizer_manual import digitizer_manual
 from digitizer import digitizer
 from apply_model import apply_model
@@ -34,9 +34,16 @@ st.write('Heart Disease prediction')
 
 
 ###
+## Deleting duplicated rows
+###
+heart_df = del_duplicated(heart_df)
+heart_df
+
+###
 ## Turning the categorical data into numerical with digitizer func. to prepare them for ML models
 ###
 heart_df_digitized = digitizer_manual(heart_df)
+
 ###
 ## Splitting dataset into independent and dependent variables 
 ###
@@ -50,30 +57,44 @@ scaler = StandardScaler()
 x_scaled = scaler.fit_transform(x)
 
 ###
-## Feature Extraction with Principal Component Analysis (PCA)
+## Feature Extraction:
+## with Linear Discriminant Analysis (LDA). LDA is a supervised learning classifier which means it requires both the features and the labels (or X and y).
+## with Principal Component Analysis (PCA) 
+## with Isomap. ISOmap is very time consuming so we prefer to not use it!
 ###
-# pca = PCA(n_components=2)
-# x_pca = pca.fit_transform(x_scaled)
-
-###
-## Feature Extraction with Linear Discriminant Analysis (LDA). LDA is a supervised learning classifier which means it requires both the features and the labels (or X and y). 
-###
-lda = LinearDiscriminantAnalysis(n_components=1)
-lda.fit(x_scaled, y)
-x_lda = lda.transform(x_scaled)
-
-###
-## Feature Extraction with Isomap. ISOmap is very time consuming so we prefer to not use it!
-###
-# iso = Isomap(n_components=2)
-# x_iso = iso.fit_transform(x_scaled)
-
+option = st.selectbox(
+     'Which feature extraction method would you prefer?',
+     ('lda', 'pca', 'iso', 'No one'))
+if option == 'lda':
+    lda = LinearDiscriminantAnalysis(n_components=1)
+    lda.fit(x_scaled, y)
+    x_lda = lda.transform(x_scaled)
+    feature_extracted_x = x_lda
+elif option == 'pca':
+    pca = PCA(n_components=2)
+    x_pca = pca.fit_transform(x_scaled)
+    feature_extracted_x = x_pca
+elif option == 'No one':
+    feature_extracted_x = x_scaled
+else:
+    iso = Isomap(n_components=2)
+    x_iso = iso.fit_transform(x_scaled)
+    feature_extracted_x = x_iso
 
 ###
 ## Applying the ML model on the data: DecisionTreeClassifier() GaussianNB()
 ###
-model = AdaBoostClassifier(n_estimators=50,learning_rate=1)
-st.write(apply_model( x_lda, y, model))
+option = st.selectbox(
+     'Which Machine Learning method would you prefer?',
+     ('AdaBoosting', 'GaussianNB', 'DecisionTree'))
+if option == 'AdaBoosting':
+    model = AdaBoostClassifier(n_estimators=50,learning_rate=1)
+elif option == 'GaussianNB':
+    model = GaussianNB()
+else:
+    model = DecisionTreeClassifier()
+
+st.write(apply_model( feature_extracted_x, y, model))
 
 
 ###
@@ -140,6 +161,8 @@ fig, ax = plt.subplots()
 ax.pie(temp['Smoking'], labels= Age_Cat.index, autopct=lambda x:str(x)[:4]+'%')
 ax.set_title('Percentage of Smoking people in different Age Categories')
 st.pyplot(fig)
+
+
 ### 
 ## cd source\repos\streamlit testing\streamlit testing\Heart
 ## streamlit run streamlit_testing.py
