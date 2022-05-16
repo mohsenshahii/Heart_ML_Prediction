@@ -1,0 +1,10 @@
+LDA reduces the dimension by maximizing the separability among each feature. It works
+by creating a new feature (you could see it as a line) and projecting all the other 
+features on that line. During transformation, LDA attempts to maximize the distance 
+between the mean of every feature. Also, the scattered amongst the data points need 
+to be minimized. By doing these, there would be a minimal overlap of data points on 
+the new axis. Less overlap means there will be minimal misclassification, and by 
+extension, means there will be better classification results. 
+
+LDA is a supervised learning classifier which means it requires both the features 
+and the labels (or X and y). 

@@ -1,0 +1,11 @@
+Principal Component Analysis is one of the most popular feature reduction techniques.
+It finds a way of reducing the number of features by finding a smaller combination of
+features that best summarises the initial feature. PCA basically uses metrics such as 
+variance and reconstruction error when performing this transformation. It attempted to
+maximize variance and minimize reconstruction error. PCA projects the initial dataset
+to a set of orthogonal axes. Datapoints that are highly correlated are clustered 
+together in the new axes. These axes are then ranked based on their order of importance.
+
+PCA is classified as an unsupervised learning algorithm and thus, does not require the
+labels of the data. In fact, PCA can be used to reduce the dataset dimension to 1,
+where the classification is done already.

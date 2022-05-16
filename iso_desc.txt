@@ -1,0 +1,11 @@
+PCA and LDA methods considered above reduce features by finding the relationship between features 
+after projecting them on an orthogonal plane. LLE (explored in the next section below) is quite 
+different in the sense that it does not use linear relationships but also accommodates non-linear 
+relationships in the features. Isomap works by using a type of learning called manifold learning. 
+
+Manifold learning summarises the data to a smaller number of features. This time however, the
+generalization is made to be such that it is sensitive to any form of non-linear structure in 
+the dataset. 
+
+Isomap creates a lower-dimensional embedding of the data while maintaining the geodesic (or mean)
+distance between all points in the dataset.
