@@ -1,0 +1,16 @@
+Decision Trees are a type of Supervised Machine Learning (that is you explain
+what the input is and what the corresponding output is in the training data)
+where the data is continuously split according to a certain parameter.
+The tree can be explained by two entities, namely decision
+nodes and leaves. The leaves are the decisions or the final outcomes.
+And the decision nodes are where the data is split.
+An example of a decision tree can be explained using above binary tree.
+Let’s say you want to predict whether a person is under risk of heart attack given their
+information like age, smoking, and physical activity, etc. The
+decision nodes here are questions like ‘What’s the age?’, ‘Does he 
+exercise?’, ‘Does he smoke’? And the leaves, which are
+outcomes like either ‘heart attack’, or ‘no heart attack’. In this case this was a binary
+classification problem (a yes no type problem). There are two main
+types of Decision Trees that here we use Classification trees (Yes/No types)
+What we’ve seen above is an example of classification tree, where the 
+outcome was a variable like ‘heart attack’, or ‘no heart attack’. Here the decision variable is Categorical.

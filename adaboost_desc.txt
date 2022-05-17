@@ -1,0 +1,8 @@
+These algorithms improve the prediction power by converting a
+number of weak learners to strong learners.
+
+The principle behind boosting algorithms is first we built 
+a model on the training dataset, then a second model is built 
+to rectify the errors present in the first model. This
+procedure is continued until and unless the errors are
+minimized, and the dataset is predicted correctly.

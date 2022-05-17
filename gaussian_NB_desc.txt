@@ -1,0 +1,20 @@
+Naive Bayes is a probabilistic machine learning algorithm 
+that can be used in several classification tasks. Typical
+applications of Naive Bayes are classification of documents,
+filtering spam, prediction and so on. This algorithm is based on the 
+discoveries of Thomas Bayes and hence its name. 
+
+The name “Naïve” is used because the algorithm incorporates
+features in its model that are independent of each other.
+Any modifications in the value of one feature do not directly
+impact the value of any other feature of the algorithm. The
+main advantage of the Naïve Bayes algorithm is that it is a
+simple yet powerful algorithm.
+
+It is based on the probabilistic model where the
+algorithm can be coded easily, and predictions did
+quickly in real-time. Hence this algorithm is the typical
+choice to solve real-world problems as it can be tuned to 
+respond to user requests instantly. But before we dive deep
+into Naïve Bayes and Gaussian Naïve Bayes, we must know what 
+is meant by conditional probability.
