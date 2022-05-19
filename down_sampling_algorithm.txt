@@ -1,0 +1,11 @@
+def down_sampler(dataframe):
+    mask = dataframe['HeartDisease']=='Yes'
+    temp = dataframe[mask]
+    dataframe_ = dataframe.drop(dataframe[dataframe['HeartDisease']=='Yes'].index)
+    temp.index = range(0,len(temp))
+    dataframe_.index=range(0,len(dataframe_))
+    #Generate 27373 random numbers between 0 and 292422
+    randomlist = random.sample(range(0,len(dataframe_) ),len(temp))
+    down_sampled = temp.append(dataframe_.loc[randomlist], ignore_index=True)
+    down_sampled = down_sampled.sample(frac=1).reset_index(drop=True)
+    return down_sampled

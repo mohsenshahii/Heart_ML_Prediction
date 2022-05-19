@@ -1,0 +1,4 @@
+As is obvious the target variable isn't balanced. A huge number of observations (%91)  
+have value 'no' while a small proportion having value 'yes'. I tried to down sample the dataset 
+so the percentage of positive and negative observations be equal. Suprisingly, downsampling reduced the 
+prediction accuracy in all three ML models. so I decided to use original dataset instead of downsampled one. 
