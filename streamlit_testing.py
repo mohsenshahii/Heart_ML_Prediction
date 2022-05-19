@@ -1,12 +1,17 @@
 ###
 ## import libraries
 ###
+from ctypes import alignment
 import streamlit as st
 import seaborn as sb
 import matplotlib.pyplot as plt
+import matplotlib
 import pandas as pd
 import numpy as np
-#from termcolor import colored
+import plotly.express as px
+import plotly.graph_objects as go
+from altair import *
+from PIL import Image
 from time import time
 from scipy.stats.stats import pearsonr
 from sklearn.manifold import LocallyLinearEmbedding
@@ -21,63 +26,88 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, precision_score
 from sklearn.tree import DecisionTreeClassifier
 
-from new_lib import del_duplicated
-from new_lib import digitizer_manual
-from new_lib import digitizer
-from new_lib import apply_pred_model
+from new_lib import *
+from description_files import *
 
+padding = 0
+st.markdown(f""" <style>
+    .reportview-container .main .block-container{{
+        padding-top: {padding}rem;
+        padding-right: {padding}rem;
+        padding-left: {padding}rem;
+        padding-bottom: {padding}rem;
+    }} </style> """, unsafe_allow_html=True)
 
 ###
-## Importing description text files
-###
-with open('dataset_topic.txt') as f:
-    dataset_topic = f.read()
-    f.close()
-with open('dataset_origin.txt') as f:
-    dataset_origin = f.read()
-    f.close()
-with open('pca_description.txt') as f:
-    pca_desc = f.read()
-    f.close()
-with open('lda_desc.txt') as f:
-    lda_desc = f.read()
-    f.close()
-with open('iso_desc.txt') as f:
-    iso_desc = f.read()
-    f.close()
-###
-## Putting Dataset into a variable
+## Putting Dataset into a variable, Deleting duplicated rows and down sampling
 ###
 heart_df = pd.read_csv("heart_2020_cleaned.csv")
-st.markdown("<h1 style='text-align: center; color: red;'>Heart Disease prediction</h1>", unsafe_allow_html=True)
-
-add_selectbox = st.sidebar.selectbox(
-    "What would you like to see?", ("Dataset", "Prediction models", "Charts")
-)
-
-###
-## Deleting duplicated rows
-###
 heart_df = del_duplicated(heart_df)
+down_sampled_heart_df = down_sampler(heart_df)
+
 
 ###
-## Turning the categorical data into numerical with digitizer func. to prepare them for ML models
+## Turning the original data into numerical with digitizer func. to prepare them for ML models
 ###
 heart_df_digitized = digitizer_manual(heart_df)
 
+add_selectbox = st.sidebar.selectbox(
+    "What would you like to see?", 
+    ("Dataset", "Prediction models", "Charts")
+)
+
+
 # Using "with" notation
 if add_selectbox == "Dataset":
-    st.markdown("<p style='font-size:24px; text-align: left; color: red; '>What topic does the dataset cover?</p>", unsafe_allow_html=True)
-    st.write(dataset_topic)
-    st.markdown("<p style='font-size:24px; text-align: left; color: red; '> Where did the dataset come from and what treatments did it undergo?</p>", unsafe_allow_html=True)
-    st.write(dataset_origin)
-    heart_df
+    st.markdown("<h1 style='text-align: center; color: red;'>Heart Disease Dataset</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:24px; text-align: justify; color: red; '>What topic does the dataset cover?</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + dataset_topic + "</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:24px; text-align: justify; color: red; '> Where did the dataset come from and what treatments did it undergo?</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + dataset_origin + "</p>", unsafe_allow_html=True)
+    st.dataframe(heart_df)
+    st.markdown("<br><br><p style='font-size:24px; text-align: left; color: red; '>Before Downsampling:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + target_desc + "</p>", unsafe_allow_html=True)
+
+    st.markdown("<p style='font-size:18px; text-align: left; color: brown;'>Proportion of observations having unbalenced percentage of 'Yes' and 'No' target variable</p>", unsafe_allow_html=True)
+    heart_disease_proportions = heart_df['HeartDisease'].value_counts()
+    #fig, ax = plt.subplots(figsize=(8,4))
+    #ax.pie(heart_disease_proportions, autopct="%1.1f%%", startangle=90, textprops={"fontsize": 9},)
+    #ax.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle.
+    #ax.legend(['No','Yes'])
+    #st.pyplot(fig)
+    labels = 'No Heart Disease', 'Heart Disease' 
+    fig = px.pie(heart_disease_proportions, values = 'HeartDisease', names = labels, color_discrete_sequence=px.colors.sequential.RdBu)
+    st.write(fig)
+
+    st.markdown("<br><br><p style='font-size:24px; text-align: left; color: red; '>After Downsampling:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:18px; text-align: left; color: brown; '>Python code of downsampling process</p>", unsafe_allow_html=True)
+    st.code(down_sampling_algorithm, language='python')
+    st.markdown("<p style='font-size:18px; text-align: left; color: brown;'>After downsampling: Balenced percentage of 'Yes' and 'No' target variable</p>", unsafe_allow_html=True)
+    heart_disease_proportions = down_sampled_heart_df["HeartDisease"].value_counts()
+    labels = 'No Heart Disease', 'Heart Disease' 
+    fig = px.pie(heart_disease_proportions, values = 'HeartDisease', names = labels, color_discrete_sequence=px.colors.sequential.RdBu)
+    st.write(fig)
+    st.markdown("<p style='font-size:18px; text-align: left; color: black; '>After downsampling the number of rows decreases to <b style='font-size:18px; text-align: left; color: red; '>"+ str(len(down_sampled_heart_df['HeartDisease']))+ " </b>rows that are half 'Yes' and half 'No'</p>", unsafe_allow_html=True)
+    
+
 elif add_selectbox == "Prediction models":
+    st.markdown("<h1 style='text-align: center; color: red;'>Heart Disease prediction</h1>", unsafe_allow_html=True)
+    choice = st.sidebar.radio("Work on Downsampled data?",('YES', 'NO'))
+    if choice == 'YES':
+        ###
+        ## Turning the downsampled categorical data into numerical with digitizer func. to prepare them for ML models
+        ###
+        heart_df_digitized = digitizer(down_sampled_heart_df)
+        st.sidebar.write('The choosen model will apply on Downsampled data!')
+    else:
+        st.sidebar.write('The choosen model will apply on Original data!')
+
+
     ###
     ## Splitting dataset into independent and dependent variables
     ###
-    y = heart_df_digitized["HeartDisease"]
-    x = heart_df_digitized.drop("HeartDisease", axis=1)
+    y = heart_df_digitized['HeartDisease']
+    x = heart_df_digitized.drop('HeartDisease', axis=1)
     ###
     ## Standardizing Data
     ###
@@ -91,23 +121,26 @@ elif add_selectbox == "Prediction models":
     ###
     option = st.selectbox(
         "Which feature extraction method would you prefer?",
-        ("lda", "pca", "iso", "No one"),
+        ("LDA", "PCA", "ISO", "No Feature extraction"),
     )
-    if option == "lda":
-        st.write(lda_desc)
+    if option == "LDA":
+        with st.expander("See explanation"):
+             st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + lda_desc + "</p>", unsafe_allow_html=True)
         lda = LinearDiscriminantAnalysis(n_components=1)
         lda.fit(x_scaled, y)
         x_lda = lda.transform(x_scaled)
         feature_extracted_x = x_lda
-    elif option == "pca":
-        st.write(pca_desc)
+    elif option == "PCA":
+        with st.expander("See explanation"):
+             st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + pca_desc + "</p>", unsafe_allow_html=True)
         pca = PCA(n_components=2)
         x_pca = pca.fit_transform(x_scaled)
         feature_extracted_x = x_pca
-    elif option == "No one":
+    elif option == "No Feature extraction":
         feature_extracted_x = x_scaled
     else:
-        st.write(iso_desc)
+        with st.expander("See explanation"):
+             st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + iso_desc + "</p>", unsafe_allow_html=True)
         iso = Isomap(n_components=2)
         x_iso = iso.fit_transform(x_scaled)
         feature_extracted_x = x_iso
@@ -120,100 +153,109 @@ elif add_selectbox == "Prediction models":
         ("AdaBoosting", "GaussianNB", "DecisionTree"),
     )
     if option2 == "AdaBoosting":
+        with st.expander("See explanation"):
+             st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + adaboost_desc + "</p>", unsafe_allow_html=True)
         model = AdaBoostClassifier(n_estimators=50, learning_rate=1)
     elif option2 == "GaussianNB":
+        with st.expander("See explanation"):
+             st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + gaussian_NB_desc + "</p>", unsafe_allow_html=True)
         model = GaussianNB()
     else:
+        with st.expander("See explanation"):
+             st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + decision_tree_desc + "</p>", unsafe_allow_html=True)
+             st.image(decision_tree_image)
         model = DecisionTreeClassifier()
-    
-    st.markdown("<div style='font-size:18px; text-align: left; color: black; '>The accuracy of applying " 
-        + "<b style='font-size:22px; text-align: left; color: red'>" + option2 + "</b>"
-        + " on feature extracted data using "
-        + "<b style='font-size:22px; text-align: left; color: red'>" + option + "</b>"
+    accuracy, precision = apply_pred_model(feature_extracted_x, y, model)
+    st.markdown("<div style='font-size:18px; text-align: left; color: black; '>The Result of applying " 
+        + "<b style='font-size:18px; text-align: left; color: red'>" + option2 + "</b>"
+        + " model on feature extracted data using "
+        + "<b style='font-size:18px; text-align: left; color: red'>" + option + "</b>"
         + " is "
-        + "<b>" + str(apply_pred_model(feature_extracted_x, y, model)) +"</b></div>", unsafe_allow_html=True)
-    #st.write(
-    #    "The accuracy of applying " 
-    #    + '\033[1m'
-    #    + option2
-    #    + '\033[1m'
-    #    + " on feature extracted data using "
-    #    + option
-    #    + " is "
-    #    + str(apply_pred_model(feature_extracted_x, y, model))
-    #)
+        + "<br>Accuracy: " + accuracy + "<br>Precision: " + precision +"</div>", unsafe_allow_html=True)
 
 elif add_selectbox == "Charts":
-
+    st.markdown("<h1 style='text-align: center; color: red;'>Heart Disease Diagrams</h1>", unsafe_allow_html=True)
     ###
     ## Showing some important diagrams of Dataset
     ###
     ## Histogram of SleepTime of participants
-    fig, ax = plt.subplots(figsize=(6, 5))
-    heart_df_digitized["SleepTime"].hist(bins=40, ax=ax)
-    st.write(fig)
+    st.markdown("<p style='text-align: left; color: black;'>Bar Chart of SleepTime Variable:</p>", unsafe_allow_html=True)
+    st.bar_chart(heart_df["SleepTime"].value_counts().sort_index())
+    st.markdown("<p style='text-align: left; color: black;'>On average, how many hours of sleep does each person get in a 24-hour period?</p><br><hr>", unsafe_allow_html=True)
 
+    ## Bar chart of Physical Health of participants
+    st.markdown("<p style='text-align: left; color: black;'>Bar Chart of PhysicalHealth Variable:</p>", unsafe_allow_html=True)
+    st.bar_chart(heart_df["PhysicalHealth"].value_counts().sort_index())
+    st.markdown("<p style='text-align: left; color: black;'>Now thinking about the participants physical health, which includes physical illness and injury, for how many days during the past 30?</p><br><hr>", unsafe_allow_html=True)
+
+    ## Bar chart of Physical Health of participants
+    st.markdown("<p style='text-align: left; color: black;'>Bar Chart of MentalHealth Variable:</p>", unsafe_allow_html=True)
+    st.bar_chart(heart_df["MentalHealth"].value_counts().sort_index())
+    st.markdown("<p style='text-align: left; color: black;'>Thinking about the participants mental health, for how many days during the past 30 days was their mental health not good?</p><br><hr>", unsafe_allow_html=True)
+    
     ## Correlation of Dataset's different attributes
+    st.markdown("<p style='text-align: left; color: black;'>Heatmap of correlations between different variables of Dataset:</p>", unsafe_allow_html=True)
     heart_corr = heart_df_digitized.corr()
-    fig, ax = plt.subplots(figsize=(6, 5))
-    sb.heatmap(heart_corr, ax=ax)
+    fig = px.imshow(heart_corr, aspect="auto", width=600, height=600)
     st.write(fig)
+    st.markdown("<p style='text-align: center; color: black;'>There is some negative and positive correlation between some variables:</p><br><hr>", unsafe_allow_html=True)
 
-    ## Physical Health (the number of injuries and illnesses during the past 30 days)
-    ## and GenHealth(General Health) have a strong negative correlation we show this
-    ## by a scatter plot
+    ##Physical Health (the number of injuries and illnesses during the past 30 days)
+    ##and GenHealth(General Health) have a strong negative correlation we show this
+    ##by a scatter plot
+    st.markdown("<p style='text-align: left; color: black;'>Scatter plot of Physical Health variable:</p>", unsafe_allow_html=True)
+    font = {'family' : 'normal',
+        'size'   : 3}
+
+    matplotlib.rc('font', **font)
     temp = heart_df.groupby("PhysicalHealth").count()
-    fig = plt.figure(figsize=(6, 5))
+    fig = plt.figure(figsize=(2, 1))
     ax = fig.add_subplot(1, 1, 1)
     ax.scatter(
         temp.index, temp["GenHealth"],
+        s = 0.1
     )
     ax.set_xlabel("Number of days having health problem during last 30 days")
     ax.set_ylabel("General health")
     st.write(fig)
-
+    st.markdown("<p style='text-align: center; color: black;'> Physical Health (the number of injuries and illnesses during the past 30 days) and GenHealth(General Health) have a strong negative correlation we show this by a scatter plot</p><br><hr>", unsafe_allow_html=True)
     ## correlation between Sleep Time and Mental Health.
     occurance_ = heart_df["SleepTime"].value_counts()
     normalized_ = occurance_[heart_df["SleepTime"]] / len(heart_df)
-    description = """Considering Sleep Time and Mental Health:
-                  There should be a positive correlation between Mental 
-                  Health and the quantity of occuranse of sleep hours in 
-                  the dataset because SleepTime is normaly distributed 
-                  and the more normal a value is the more times it is
-                  apeared so instead of calculating the correlation between
-                  Sleep Time and Mental Health we calculate correlation 
-                  between occuranse percentage of a Sleep Time and Mental Health."""
-    description
     st.write(pearsonr(heart_df["MentalHealth"], normalized_))
 
-    ## Line graphing the variables of Sleep Time and Mental health in the same figure
-    sleeping_time = heart_df["SleepTime"].value_counts().sort_index()
-    mental_health = heart_df["MentalHealth"].value_counts().sort_index()
+    ## Drawing Line graph of Sleep Time and Mental health in the same figure
+    sleeping_time = pd.DataFrame(heart_df["SleepTime"].value_counts().sort_index())
+    mental_health = pd.DataFrame(heart_df["MentalHealth"].value_counts().sort_index())
+    result = pd.concat([sleeping_time, mental_health], axis=1)
+    st.line_chart(result)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + sleep_mental_corr + "<hr></p>", unsafe_allow_html=True)
 
     ## Pie charting the proportion of Smokers to Non-smokers
-    smoking_proportions = heart_df["Smoking"].value_counts()
-    labels = "Non Smoking", "Smoking"
-    fig, ax = plt.subplots()
-    ax.pie(smoking_proportions, labels=labels, autopct="%1.1f%%", startangle=90)
-    ax.set_title("Pie")
-    ax.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle.
-    st.pyplot(fig)
-
+    st.markdown("<p style='text-align: left; color: black;'>Percentage of Smoking and Non Smoking people</p>", unsafe_allow_html=True)
+    smoking_proportion = heart_df["Smoking"].value_counts()
+    labels = 'Non Smoking', 'Smoking' 
+    fig = px.pie(smoking_proportion, values = 'Smoking', names = labels, color_discrete_sequence=px.colors.sequential.RdBu)
+    st.write(fig)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>Have he\she smoked at least 100 cigarettes in your entire life? [Note: 5 packs = 100 cigarettes]<hr></p>", unsafe_allow_html=True)
     ## Pie charting the proportion of smokers among different age categories
+    st.markdown("<p style='text-align: left; color: black;'>Percentage of Smoking people in different Age Categories</p>", unsafe_allow_html=True)
     temp = heart_df_digitized.groupby("AgeCategory").sum()
     Age_Cat = heart_df.groupby("AgeCategory").sum()
-    fig, ax = plt.subplots()
-    ax.pie(
-        temp["Smoking"],
-        labels=Age_Cat.index,
-        autopct=lambda x: str(x)[:4] + "%",
-        textprops={"fontsize": 6},
-    )
-    ax.set_title("Percentage of Smoking people in different Age Categories")
-    st.pyplot(fig)
+    fig = px.pie(temp, values = 'Smoking', names = Age_Cat.index, color_discrete_sequence=px.colors.sequential.RdBu )
+    st.write(fig)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>Population of smokers among different age categories differs, the biggest number of smokers are in 60-64 and 65-69 age categories and the lowest is related to 18_24 age category <hr></p>", unsafe_allow_html=True)
+    ## Pie charting the proportion of people having kidney disease
+    st.markdown("<p style='text-align: left; color: black;'>Percentage of people having kidney disease </p>", unsafe_allow_html=True)
+    kidney_proportion = heart_df["KidneyDisease"].value_counts()
+    labels = "Having no kidney disease", 'Having kidney disease' 
+    fig = px.pie(kidney_proportion, values = 'KidneyDisease', names = labels, color_discrete_sequence = px.colors.sequential.RdBu)
+    st.write(fig)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>Not including kidney stones, bladder infection or incontinence, were he\she ever told he\she had kidney disease?<hr></p>", unsafe_allow_html=True)
 
 
 ###
 ## cd source\repos\streamlit testing\streamlit testing\Heart
 ## streamlit run streamlit_testing.py
 ###
+

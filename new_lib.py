@@ -1,6 +1,7 @@
 from sklearn.metrics import accuracy_score, precision_score
 from sklearn.model_selection import train_test_split
 import pandas as pd
+import random
 
 def apply_pred_model(x, y,model):
   '''
@@ -17,9 +18,9 @@ def apply_pred_model(x, y,model):
  
   precision = precision_score(y_test, y_pred)
 
-  return("Accuracy score:", accuracy,
-          "Precision score:", precision
-          ) 
+  return (str(accuracy)[:6],
+          str(precision)[:6])
+          
 
 
 def del_duplicated(dataframe):
@@ -36,7 +37,7 @@ def digitizer(dataframe):
      Easier way to transforming categorical data to number was get_dummies function
      This method of digitizing  slightly(1-2 percents) increase the accuracy of ML models
   '''
-  dataframe.replace(['Yes','No'],[1 , 0], inplace = True)
+  dataframe['HeartDisease'].replace(['Yes','No'],[1 , 0], inplace = True)
   digitized = pd.get_dummies(dataframe)
   return digitized
 
@@ -56,3 +57,15 @@ def digitizer_manual(dataframe):
   dataframe_['GenHealth'].replace(['Very good','Good', 'Excellent', 'Fair', 'Poor'], [5, 4, 3, 2, 1], inplace = True)
   dataframe_['AgeCategory'].replace(['18-24','25-29', '30-34', '35-39', '40-44', '45-49', '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80 or older'], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], inplace = True)
   return dataframe_
+
+def down_sampler(dataframe):
+    mask = dataframe['HeartDisease']=='Yes'
+    temp = dataframe[mask]
+    dataframe_ = dataframe.drop(dataframe[dataframe['HeartDisease']=='Yes'].index)
+    temp.index = range(0,len(temp))
+    dataframe_.index=range(0,len(dataframe_))
+    #Generate 27373 random numbers between 0 and 292422
+    randomlist = random.sample(range(0,len(dataframe_) ),len(temp))
+    down_sampled = temp.append(dataframe_.loc[randomlist], ignore_index=True)
+    down_sampled = down_sampled.sample(frac=1).reset_index(drop=True)
+    return down_sampled
