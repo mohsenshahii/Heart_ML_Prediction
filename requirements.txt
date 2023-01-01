@@ -9,4 +9,4 @@ joblib==1.0.1
 Pillow==8.2.0
 scikit_learn==0.24.2
 sklearn
-plotly==5.7.0
+plotly
