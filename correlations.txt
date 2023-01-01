@@ -1,0 +1,8 @@
+There are some negative and positive correlation between some variables:
+1- It's predictable that Genhealth (general health) and physical health have a negative correlation (-42%)
+because general health is an attribute to identify the overall condition of participant's body claimed by him/her while 
+Physical health determines the number of days each participant had any kind of physical difficulty during the past 30 days.
+2- Similarly The positive correlation (42%) between Physical health and diffwalking (Whether the participant has 
+difficulty in walking?) is understandable. 
+3- Another positive correlation (26%) exists between age and Skin cancer that is rational. 4- Finally, There should be 
+a strong negative correlation between age and physical health but there isn't.
