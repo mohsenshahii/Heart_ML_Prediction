@@ -35,4 +35,7 @@ with open('down_sampling_algorithm.txt') as f:
 with open('sleep_mental_corr.txt') as f:
     sleep_mental_corr = f.read()
     f.close()
+with open('correlations.txt') as f:
+    correlations = f.read()
+    f.close()
 decision_tree_image = Image.open('Decision_tree_pic.png')
