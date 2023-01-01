@@ -1,5 +1,5 @@
 Considering Sleep Time and Mental Health:
-                  There should be a positive correlation between Mental 
+                  There should be a negative correlation between Mental 
                   Health and the quantity of occuranse of sleep hours in 
                   the dataset because SleepTime is normaly distributed 
                   and the more normal a value is the more times it is
