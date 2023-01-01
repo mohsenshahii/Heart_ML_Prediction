@@ -7,11 +7,8 @@ import seaborn as sb
 import matplotlib.pyplot as plt
 import matplotlib
 import pandas as pd
-import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
 from altair import *
-from PIL import Image
 from time import time
 from scipy.stats.stats import pearsonr
 from sklearn.manifold import LocallyLinearEmbedding
@@ -70,11 +67,6 @@ if add_selectbox == "Dataset":
 
     st.markdown("<p style='font-size:18px; text-align: left; color: brown;'>Proportion of observations having unbalenced percentage of 'Yes' and 'No' target variable</p>", unsafe_allow_html=True)
     heart_disease_proportions = heart_df['HeartDisease'].value_counts()
-    #fig, ax = plt.subplots(figsize=(8,4))
-    #ax.pie(heart_disease_proportions, autopct="%1.1f%%", startangle=90, textprops={"fontsize": 9},)
-    #ax.axis("equal")  # Equal aspect ratio ensures that pie is drawn as a circle.
-    #ax.legend(['No','Yes'])
-    #st.pyplot(fig)
     labels = 'No Heart Disease', 'Heart Disease' 
     fig = px.pie(heart_disease_proportions, values = 'HeartDisease', names = labels, color_discrete_sequence=px.colors.sequential.RdBu)
     st.write(fig)
@@ -179,31 +171,44 @@ elif add_selectbox == "Charts":
     ## Showing some important diagrams of Dataset
     ###
     ## Histogram of SleepTime of participants
-    st.markdown("<p style='text-align: left; color: black;'>Bar Chart of SleepTime Variable:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: left; color: red;'>Bar Chart of SleepTime Variable:</p>", unsafe_allow_html=True)
     st.bar_chart(heart_df["SleepTime"].value_counts().sort_index())
-    st.markdown("<p style='text-align: left; color: black;'>On average, how many hours of sleep does each person get in a 24-hour period?</p><br><hr>", unsafe_allow_html=True)
-
-    ## Bar chart of Physical Health of participants
-    st.markdown("<p style='text-align: left; color: black;'>Bar Chart of PhysicalHealth Variable:</p>", unsafe_allow_html=True)
-    st.bar_chart(heart_df["PhysicalHealth"].value_counts().sort_index())
-    st.markdown("<p style='text-align: left; color: black;'>Now thinking about the participants physical health, which includes physical illness and injury, for how many days during the past 30?</p><br><hr>", unsafe_allow_html=True)
-
-    ## Bar chart of Physical Health of participants
-    st.markdown("<p style='text-align: left; color: black;'>Bar Chart of MentalHealth Variable:</p>", unsafe_allow_html=True)
-    st.bar_chart(heart_df["MentalHealth"].value_counts().sort_index())
-    st.markdown("<p style='text-align: left; color: black;'>Thinking about the participants mental health, for how many days during the past 30 days was their mental health not good?</p><br><hr>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: justify; color: black;'>On average, how many hours of sleep does each person get in a 24-hour period?</p><br>", unsafe_allow_html=True)
+    ## Bar chart of Mental Health of participants
+    st.markdown("<p style='text-align: left; color: red;'>Bar Chart of MentalHealth Variable:</p>", unsafe_allow_html=True)
+    st.write(len(heart_df))
+    st.bar_chart(heart_df["MentalHealth"].value_counts().sort_index()/len(heart_df))
+    st.markdown("<p style='text-align: justify; color: black;'>Thinking about the participants mental health, for how many days during the past 30 days was their mental health not good?</p><br>", unsafe_allow_html=True)
+    ## Bar chart of Mental Health of participants having enough sleep
+    st.markdown("<p style='text-align: left; color: red;'>Bar Chart of MentalHealth Variable for participants having enough sleep:</p>", unsafe_allow_html=True)
+    more_7_mask = heart_df['SleepTime'] > 7
+    less_10_mask = heart_df['SleepTime'] < 10
+    st.write(len(heart_df[more_7_mask & less_10_mask]))
+    st.bar_chart(heart_df[more_7_mask & less_10_mask]['MentalHealth'].value_counts().sort_index()/len(heart_df[more_7_mask & less_10_mask]))
+    st.markdown("<p style='text-align: justify; color: black;'>Participants having 7,8 or 9 hours sleep a day have relatively fewer number of mental problems during last 30 days. As for overall partcipants the percentage of zero mental problems is 62% while the same pecentage for participants having enough sleep it's 68% </p><br>", unsafe_allow_html=True)
     
-    ## Correlation of Dataset's different attributes
-    st.markdown("<p style='text-align: left; color: black;'>Heatmap of correlations between different variables of Dataset:</p>", unsafe_allow_html=True)
-    heart_corr = heart_df_digitized.corr()
-    fig = px.imshow(heart_corr, aspect="auto", width=600, height=600)
+    ## Drawing Line graph of Sleep Time and Mental health in the same figure
+    sleeping_time = pd.DataFrame(heart_df["SleepTime"].value_counts().sort_index())
+    mental_health = pd.DataFrame(heart_df["MentalHealth"].value_counts().sort_index())
+    result = pd.concat([sleeping_time, mental_health], axis=1)
+    st.line_chart(result)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + sleep_mental_corr + "<hr></p>", unsafe_allow_html=True)
+
+
+    ## Bar chart of Physical Health of participants
+    st.markdown("<p style='text-align: left; color: red;'>Bar Chart of PhysicalHealth Variable:</p>", unsafe_allow_html=True)
+    st.bar_chart(heart_df['PhysicalHealth'].value_counts().sort_index())
+    st.markdown("<p style='text-align: left; color: black;'>The suprizing fact is among the people claiming that during the past 30 days had zero physical difficulty the biggest proportions are belong to elderly people!</p>", unsafe_allow_html=True)
+    healthy_mask =  heart_df['PhysicalHealth'] == 0
+    age_category = heart_df[healthy_mask]['AgeCategory'].value_counts()
+    fig = px.pie(age_category, values = 'AgeCategory',names = age_category.index, color_discrete_sequence=px.colors.sequential.RdBu)
     st.write(fig)
-    st.markdown("<p style='text-align: center; color: black;'>There is some negative and positive correlation between some variables:</p><br><hr>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: justify; color: black;'>Now thinking about the participants physical health, which includes physical illness and injury, for how many days during the past 30?</p><br>", unsafe_allow_html=True)
 
     ##Physical Health (the number of injuries and illnesses during the past 30 days)
     ##and GenHealth(General Health) have a strong negative correlation we show this
     ##by a scatter plot
-    st.markdown("<p style='text-align: left; color: black;'>Scatter plot of Physical Health variable:</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: left; color: red;'>Scatter plot of Physical Health variable:</p>", unsafe_allow_html=True)
     font = {'family' : 'normal',
         'size'   : 3}
 
@@ -218,35 +223,45 @@ elif add_selectbox == "Charts":
     ax.set_xlabel("Number of days having health problem during last 30 days")
     ax.set_ylabel("General health")
     st.write(fig)
-    st.markdown("<p style='text-align: center; color: black;'> Physical Health (the number of injuries and illnesses during the past 30 days) and GenHealth(General Health) have a strong negative correlation we show this by a scatter plot</p><br><hr>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: justify; color: black;'> Physical Health (the number of injuries and illnesses during the past 30 days) and GenHealth(General Health) have a strong negative correlation we show this by a scatter plot</p><br><hr>", unsafe_allow_html=True)
     ## correlation between Sleep Time and Mental Health.
     occurance_ = heart_df["SleepTime"].value_counts()
     normalized_ = occurance_[heart_df["SleepTime"]] / len(heart_df)
-    st.write(pearsonr(heart_df["MentalHealth"], normalized_))
+    
 
-    ## Drawing Line graph of Sleep Time and Mental health in the same figure
-    sleeping_time = pd.DataFrame(heart_df["SleepTime"].value_counts().sort_index())
-    mental_health = pd.DataFrame(heart_df["MentalHealth"].value_counts().sort_index())
-    result = pd.concat([sleeping_time, mental_health], axis=1)
-    st.line_chart(result)
-    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>" + sleep_mental_corr + "<hr></p>", unsafe_allow_html=True)
+    ## Correlation of Dataset's different attributes
+    st.markdown("<p style='text-align: left; color: red;'>Heatmap of correlations between different variables of Dataset:</p>", unsafe_allow_html=True)
+    heart_corr = heart_df_digitized.corr()
+    fig = px.imshow(heart_corr, aspect="auto", width=600, height=600)
+    st.write(fig)
+    st.markdown("<p style='text-align: justify; color: black;'>" + correlations + "</p><br><hr>", unsafe_allow_html=True)
+
+
 
     ## Pie charting the proportion of Smokers to Non-smokers
-    st.markdown("<p style='text-align: left; color: black;'>Percentage of Smoking and Non Smoking people</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: left; color: red;'>Percentage of Smoking and Non Smoking people</p>", unsafe_allow_html=True)
     smoking_proportion = heart_df["Smoking"].value_counts()
     labels = 'Non Smoking', 'Smoking' 
     fig = px.pie(smoking_proportion, values = 'Smoking', names = labels, color_discrete_sequence=px.colors.sequential.RdBu)
     st.write(fig)
-    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>Have he\she smoked at least 100 cigarettes in your entire life? [Note: 5 packs = 100 cigarettes]<hr></p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>Have he\she smoked at least 100 cigarettes in his\her entire life? [Note: 5 packs = 100 cigarettes]</p>", unsafe_allow_html=True)
     ## Pie charting the proportion of smokers among different age categories
-    st.markdown("<p style='text-align: left; color: black;'>Percentage of Smoking people in different Age Categories</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: left; color: red;'>Percentage of Smoking people in different Age Categories</p>", unsafe_allow_html=True)
     temp = heart_df_digitized.groupby("AgeCategory").sum()
     Age_Cat = heart_df.groupby("AgeCategory").sum()
     fig = px.pie(temp, values = 'Smoking', names = Age_Cat.index, color_discrete_sequence=px.colors.sequential.RdBu )
     st.write(fig)
-    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>Population of smokers among different age categories differs, the biggest number of smokers are in 60-64 and 65-69 age categories and the lowest is related to 18_24 age category <hr></p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>Population smoking people among different age categories varies, the biggest number of smokers are in 60-64 and 65-69 age categories and the lowest is related to 18_24 age category <hr></p>", unsafe_allow_html=True)
+     ## Pie charting the proportion of smokers among different age categories
+    st.markdown("<p style='text-align: left; color: red;'>Percentage of HeartDisease in different Age Categories</p>", unsafe_allow_html=True)
+    temp = heart_df_digitized.groupby("AgeCategory").sum()
+    Age_Cat = heart_df.groupby("AgeCategory").sum()
+    fig = px.pie(temp, values = 'HeartDisease', names = Age_Cat.index, color_discrete_sequence=px.colors.sequential.RdBu )
+    st.write(fig)
+    st.markdown("<p style='font-size:17px; text-align: justify; color: black; '>Percentage of people having heart disease among different age categories differs, the biggest number of HeartDisease occurs in more than 80 and 70-74 age categories and the lowest is related to 18_24 age category <hr></p>", unsafe_allow_html=True)
+    
     ## Pie charting the proportion of people having kidney disease
-    st.markdown("<p style='text-align: left; color: black;'>Percentage of people having kidney disease </p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: left; color: red;'>Percentage of people having kidney disease </p>", unsafe_allow_html=True)
     kidney_proportion = heart_df["KidneyDisease"].value_counts()
     labels = "Having no kidney disease", 'Having kidney disease' 
     fig = px.pie(kidney_proportion, values = 'KidneyDisease', names = labels, color_discrete_sequence = px.colors.sequential.RdBu)

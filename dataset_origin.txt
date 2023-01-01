@@ -1,10 +1,10 @@
-    Originally, the dataset come from the CDC and is a major part of the Behavioral Risk 
+    Originally, the dataset comes from the CDC and is a major part of the Behavioral Risk 
     Factor Surveillance System (BRFSS), which conducts annual telephone surveys to gather
     data on the health status of U.S. residents. As the CDC describes: "Established in 1984 
     with 15 states, BRFSS now collects data in all 50 states as well as the District of 
     Columbia and three U.S. territories. BRFSS completes more than 400,000 adult interviews
     each year, making it the largest continuously conducted health survey system in the
-    world.". The most recent dataset (as of February 15, 2022) includes data from 2020. 
+    world". The most recent dataset (as of February 15, 2022) includes data from 2020. 
     It consists of 401,958 rows and 279 columns. The vast majority of columns are questions
     asked to respondents about their health status, such as "Do you have serious difficulty 
     walking or climbing stairs?" or "Have you smoked at least 100 cigarettes in your entire
