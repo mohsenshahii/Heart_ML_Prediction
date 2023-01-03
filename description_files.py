@@ -17,7 +17,7 @@ with open('lda_desc.txt') as f:
 with open('iso_desc.txt') as f:
     iso_desc = f.read()
     f.close()
-with open('decision_tree_desc.txt') as f:
+with open('iso_desc.txt') as f:
     decision_tree_desc = f.read()
     f.close()
 with open('adaboost_desc.txt') as f:
