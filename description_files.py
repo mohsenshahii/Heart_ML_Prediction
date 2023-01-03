@@ -23,10 +23,10 @@ with open('iso_desc.txt') as f:
 with open('adaboost_desc.txt') as f:
     adaboost_desc = f.read()
     f.close()
-with open('gaussian_NB_desc.txt') as f:
+with open('adaboost_desc.txt') as f:
     gaussian_NB_desc = f.read()
     f.close()
-with open('target_desc.txt') as f:
+with open('adaboost_desc.txt') as f:
     target_desc = f.read()
     f.close()
 with open('down_sampling_algorithm.txt') as f:
